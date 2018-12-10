@@ -2,22 +2,28 @@
 namespace app\index\controller; 
 
 use think\Controller; 
+
 class Register extends Controller {
 	public function index() {
 		return $this -> fetch(); 
     }
-    public function direct(){
-        $this->redirect(url('register/index'));
-    }
+
     public function doRegister(){
 		$param = input('post.');
-		$sqlInsertCommand = "insert into users(`user_name`,`user_pwd`) value('".$param['user_name']."'".","."'".$param['user_pwd']."');";
-		$data=db('users')->execute($sqlInsertCommand);
-		//$data=db('users')->execute("insert into users(`user_name`,`user_pwd`) value('aa','aa');");
-		$this->redirect(url('register/registOK'));
-	}
-	public function registOK(){
-		// TODO 获取注册的用户名？
-		echo "注册成功!" . ' <a href="' . url('login/loginout') . '">退出</a>'; 
+      	if (empty($param['user_name'])) {
+			$this -> error('用户名不能为空'); 
+		}
+		if (empty($param['user_pwd'])) {
+			$this -> error('密码不能为空'); 
+		}	
+		// 验证用户名
+		$has = db('users') -> where('user_name', $param['user_name']) -> find(); 
+		if (!empty($has)) {	
+				$this -> error('用户名已存在'); 
+		}else{
+   		  // 插入用户
+          $insert = db('users') ->insert(['user_name' => $param['user_name'], 'user_pwd' => $param['user_pwd']]);
+          echo "注册成功!" . ' <a href="' . url('Login/loginout') . '">退出</a>';
+        }
 	}
 }
